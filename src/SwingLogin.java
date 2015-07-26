@@ -8,13 +8,13 @@ public class SwingLogin extends JFrame implements ActionListener {
 
 	JLabel l1, l2, l3;
 	JTextField tf1;
-	JButton btn1;
+	JButton btn1,btn2;
 	JPasswordField p1;
 	SwingLogin()
 	{
 		setTitle("Connectez vous sur le service Medico");
 		
-		setSize(600, 300);
+		setSize(700, 300);
 		setResizable(false);
 		setLayout(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -27,6 +27,7 @@ public class SwingLogin extends JFrame implements ActionListener {
 		tf1 = new JTextField();
 		p1 = new JPasswordField();
 		btn1 = new JButton("Valider");
+		btn2 = new JButton("S'inscrire");
 		
 		l1.setBounds(100, 30, 400, 30);
 		l2.setBounds(80, 70, 200, 30);
@@ -34,23 +35,31 @@ public class SwingLogin extends JFrame implements ActionListener {
 		tf1.setBounds(300, 70, 200, 30);
 		p1.setBounds(300, 110, 200, 30);
 		btn1.setBounds(150, 160, 100, 30);
-
+		btn2.setBounds(300, 160, 100, 30);
+		
 		add(l1);
 		add(l2);
 		add(tf1);
 		add(l3);
 		add(p1);
 		add(btn1);
+		add(btn2);
 		setVisible(true);
 		btn1.addActionListener(this);
+		btn2.addActionListener(this);
 
 	}
 
 	public void actionPerformed(ActionEvent e)
 	{
+		if (e.getSource()==btn1)
 		showData();
-	}
+		if (e.getSource()==btn2){
+			this.dispose();
+		new CreateUser();
 
+	}
+	}
 	public void showData()
 	{
 		JFrame f1 = new JFrame();
@@ -59,29 +68,28 @@ public class SwingLogin extends JFrame implements ActionListener {
 		String str1 = tf1.getText();
 		char[] p = p1.getPassword();
 		String str2 = new String(p);
-		boolean is_patient = false;
-		boolean is_medecin = false;
-		boolean is_pharmacie = false;
 
 		try
 		{
 			Class.forName("com.mysql.jdbc.Driver");
 			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb", user, "");
+			// requete pour obtenir le prenom de l utilisateur
 			PreparedStatement ps = con.prepareStatement("select prenom from utilisateur where mail=? and mot_de_passe=?");
-            // ici j'aurai aimé preparer la requete pour lire mes bool dans ma BDD
-			
+			//requete pour la recherche de statut utilisateur
+			PreparedStatement statut = con.prepareStatement("select statut_user from utilisateur where mail=? and mot_de_passe=?");
+			System.out.println(ps);
+			//on complete les requete avant de les executer
 			ps.setString(1, str1);
 			ps.setString(2, str2);
-/*
-			statut.setBoolean(1, is_patient);
-			statut.setBoolean(2, is_medecin);
-			statut.setBoolean(3, is_pharmacie);
-			*/
+			statut.setString(1, str1);
+			statut.setString(2, str2);
+			
+			System.out.println(statut);
+			// on execute les requetes 
 			ResultSet rs = ps.executeQuery();
-			PreparedStatement statut = con.prepareStatement("select is_patient, is_medecin, is_pharmacie from utilisateur where mail=? and mot_de_passe=?");
+			ResultSet pouvoir =statut.executeQuery();
 			
 			
-			 
 			
 			if (rs.next())
 			{
@@ -97,23 +105,20 @@ public class SwingLogin extends JFrame implements ActionListener {
 				f1.add(l);
 				f1.add(l0);
 				//l.setText("Bienvenue " + rs.getString(1));
-				//gestion des droits
-				ResultSet askstatut = statut.executeQuery();
-				System.out.println(askstatut.getBoolean("is_medecin")); 
-				is_patient = askstatut.getBoolean(1);
-				is_medecin = askstatut.getBoolean(2);
-				is_pharmacie = askstatut.getBoolean(3);
-				System.out.printf("%d %d %d",is_patient, is_medecin, is_pharmacie);
+				//gestion des droits;
+				if(pouvoir.next()){
+					int droit= pouvoir.getInt(1); //1= patient 2= medecin 3 = pharmacien
+					if (droit==1){
+					l.setText("Bienvenue sur Medico.net" +  rs.getString(1));
+					this.dispose();
+					new InitCarnetDeSante(str1);
+					}else if (droit == 2)
+						l.setText("Bienvenue Docteur" +  rs.getString(1));
+					else if (droit == 3 )
+						l.setText("Bienvenue monsieur ou madame" +  rs.getString(1));
+
 				//fi attribution des droits 
-				//test 
-				if(is_medecin)
-					l.setText("Bienvenue Docteur" + rs.getString(1));
-				else if(is_patient)
-					l.setText("Bienvenue Cher Patient" + rs.getString(1));
-				else if (is_pharmacie)
-					l.setText("Bienvenue Mr le Pharmacien" + rs.getString(1));
-				else 
-					l.setText("Il y a un problème avec vos droits.Contactez un Admin" + rs.getString(1));
+				} 
 				f1.add(l);
 				l.setForeground(Color.red);
 				
