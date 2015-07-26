@@ -56,7 +56,7 @@ public class SwingLogin extends JFrame implements ActionListener {
 		showData();
 		if (e.getSource()==btn2){
 			this.dispose();
-			CreateUser c= new CreateUser();
+		new CreateUser();
 
 	}
 	}
@@ -108,9 +108,11 @@ public class SwingLogin extends JFrame implements ActionListener {
 				//gestion des droits;
 				if(pouvoir.next()){
 					int droit= pouvoir.getInt(1); //1= patient 2= medecin 3 = pharmacien
-					if (droit==1)
-					l.setText("Bienvenue monsieur ou madame" +  rs.getString(1));
-					else if (droit == 2)
+					if (droit==1){
+					l.setText("Bienvenue sur Medico.net" +  rs.getString(1));
+					this.dispose();
+					new InitCarnetDeSante(str1);
+					}else if (droit == 2)
 						l.setText("Bienvenue Docteur" +  rs.getString(1));
 					else if (droit == 3 )
 						l.setText("Bienvenue monsieur ou madame" +  rs.getString(1));

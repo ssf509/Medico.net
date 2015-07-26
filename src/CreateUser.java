@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -67,7 +66,7 @@ public class CreateUser extends JFrame {
 		group.add(jr2);
 		group.add(jr3);
 		JPanel top = new JPanel();
-		jr1.addActionListener((ActionListener) new StateListener());
+		jr1.addActionListener(new StateListener());
 		jr2.addActionListener(new StateListener());
 		jr3.addActionListener(new StateListener());
 		top.add(jr1);
@@ -145,7 +144,10 @@ public class CreateUser extends JFrame {
 			String adresse = null;
 			String code_postal = null;
 			String ville1 = null;
-			char[] password1 = null;
+			String password1 = null;
+			String url_base="jdbc:mysql://localhost:3306/mydb";
+			String user_base="root";
+			String base_pwd="";
 
 			System.out.println("je passe par la ");
 			// recréation des fonctions isset pour verifier les saisies
@@ -182,17 +184,16 @@ public class CreateUser extends JFrame {
 						"Le Champ MOT DE PASSE est vide.",
 						" Saisie Incomplète", JOptionPane.WARNING_MESSAGE);
 			else
-				password1 = pass.getPassword();
+				password1 = new String(pass.getPassword());
 			// si tout les champs sont saisis ET que un statut est choisi
 			if ((nom1.length() != 0 && prenom1.length() != 0
 					&& adresse.length() != 0 && code_postal.length() != 0
-					&& ville1.length() != 0 && password1.length != 0)
+					&& ville1.length() != 0 && password1.length() != 0)
 					&& group.getSelection() != null) {
 				// on prépare l'insertion en BDD
 				try {
 					Class.forName("com.mysql.jdbc.Driver");
-					Connection con = DriverManager.getConnection(
-							"jdbc:mysql://localhost:3306/mydb", "root", "");
+					Connection con = DriverManager.getConnection( url_base , user_base , base_pwd);
 					String requete = "INSERT INTO `utilisateur` (`nom`, `prenom`, `mail`, `mot_de_passe`, `adresse`, `telephone`, `statut_user`, `centre_medical_idcentre_medical`) VALUES('"
 							+ nom1
 							+ "', '"
@@ -200,7 +201,7 @@ public class CreateUser extends JFrame {
 							+ "', '"
 							+ email1
 							+ "', '"
-							+ password1.toString()
+							+ password1
 							+ "', '"
 							+ adresse
 							+ " - "
@@ -211,6 +212,8 @@ public class CreateUser extends JFrame {
 					Statement stmt = con.createStatement();
 					stmt.executeUpdate(requete);
 					System.out.println("insertion effectué avec succès");
+				    SwingLogin s= new SwingLogin();
+				    
 
 				} catch (ClassNotFoundException | SQLException e1) {
 					System.out.println("connexion erronnée");
@@ -222,7 +225,7 @@ public class CreateUser extends JFrame {
 						" Saisie Incomplète", JOptionPane.WARNING_MESSAGE);
 		}
 	}
-
+	// classe contenant la methode permettant de faire 
 	class StateListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			// Attribution des droits
